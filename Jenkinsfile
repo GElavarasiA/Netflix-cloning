@@ -1,51 +1,34 @@
 pipeline {
     agent any
+    
+    options {
+        // This stops Jenkins from trying to clone automatically and failing
+        skipDefaultCheckout()
+    }
 
     stages {
-        stage('Clean Workspace') {
+        stage('Cleanup & Init') {
             steps {
-                // Ensure a fresh start to avoid "not a git directory" errors
-                cleanWs()
+                // Wipe the folder and force a fresh git initialization
+                deleteDir() 
+                sh 'git init'
+                sh 'git remote add origin https://github.com/GElavarasiA/Netflix-cloning.git'
             }
         }
 
         stage('Clone') {
             steps {
-                // Using the full checkout syntax is more reliable in Jenkins Pipelines
-                checkout([$class: 'GitSCM', 
-                    branches: [[name: '*/main']], 
-                    userRemoteConfigs: [[url: 'https://github.com/GElavarasiA/Netflix-cloning.git']]
-                ])
+                // Now we pull the code manually
+                checkout scm
             }
         }
 
         stage('Build Docker Image') {
             steps {
-                // It is good practice to use double quotes for sh commands
                 sh "docker build -t netflix-clone ."
             }
         }
-
-        stage('Remove Old Container') {
-            steps {
-                // '|| true' ensures the pipeline doesn't fail if the container doesn't exist yet
-                sh "docker rm -f netflix-container || true"
-            }
-        }
-
-        stage('Run Container') {
-            steps {
-                sh "docker run -d -p 8085:80 --name netflix-container netflix-clone"
-            }
-        }
-    }
-    
-    post {
-        failure {
-            echo "Pipeline failed. Check the Docker logs or Git permissions."
-        }
-        success {
-            echo "Deployment successful! App available on port 8085."
-        }
+        
+        // ... rest of your stages (Remove Old Container, Run Container)
     }
 }

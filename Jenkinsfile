@@ -1,27 +1,29 @@
 pipeline {
     agent any
-    
+
     stages {
+
         stage('Clone') {
             steps {
-                checkout scm
+                git 'https://github.com/GElavarasiA/Netflix-cloning.git'
             }
         }
-        stage('Docker Build') {
+
+        stage('Build Docker Image') {
             steps {
-                sh 'docker build -t netflix-clone-app .'
+                sh 'docker build -t netflix-clone .'
             }
         }
-        stage('Cleanup Old Container') {
+
+        stage('Remove Old Container') {
             steps {
-                sh 'docker stop netflix-container || true'
-                sh 'docker rm netflix-container || true'
+                sh 'docker rm -f netflix-container || true'
             }
         }
-        stage('Deploy') {
+
+        stage('Run Container') {
             steps {
-                // Runs the clone on port 8085
-                sh 'docker run -d -p 8085:80 --name netflix-container netflix-clone-app'
+                sh 'docker run -d -p 8085:80 --name netflix-container netflix-clone'
             }
         }
     }

@@ -5,7 +5,7 @@ pipeline {
 
         stage('Clone') {
             steps {
-                git 'https://github.com/GElavarasiA/Netflix-cloning.git'
+                git branch: 'main', url: 'https://github.com/GElavarasiA/Netflix-cloning.git'
             }
         }
 
